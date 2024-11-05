@@ -1,67 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 
 function FormScreen() {
   const navigate = useNavigate();
   const [isInactive, setIsInactive] = useState(false);
-  const [timer, setTimer] = useState(0);
-  const iframeRef = useRef(null);
+  let timer;
 
-  // Reset the inactivity timer
   const resetTimer = () => {
-    setTimer(0);
+    // Clear any existing timer
+    clearTimeout(timer);
+
+    // Set inactivity state to false, removing popup if shown
     setIsInactive(false);
+
+    // Restart the timer
+    timer = setTimeout(() => {
+      setIsInactive(true); // Show inactivity popup after 30 seconds
+    }, 30000); // 30000 ms = 30 seconds
   };
 
   useEffect(() => {
-    // Increment the timer every second
-    const interval = setInterval(() => {
-      setTimer((prev) => prev + 1);
-    }, 1000);
+    // Start the inactivity timer when component mounts
+    resetTimer();
 
-    // Show popup after 30 seconds of inactivity
-    if (timer >= 30 && !isInactive) {
-      setIsInactive(true);
-    }
+    // Listen to user interactions on the main window
+    const handleUserActivity = () => resetTimer();
 
-    return () => clearInterval(interval); // Clear interval on component unmount
-  }, [timer, isInactive]);
+    window.addEventListener('mousemove', handleUserActivity);
+    window.addEventListener('keydown', handleUserActivity);
+    window.addEventListener('scroll', handleUserActivity);
 
-  // Reset inactivity timer when there is user activity on the main window
-  useEffect(() => {
-    if (!isInactive) {
-      const handleActivity = () => resetTimer();
-
-      window.addEventListener('mousemove', handleActivity);
-      window.addEventListener('keydown', handleActivity);
-      window.addEventListener('scroll', handleActivity);
-
-      return () => {
-        window.removeEventListener('mousemove', handleActivity);
-        window.removeEventListener('keydown', handleActivity);
-        window.removeEventListener('scroll', handleActivity);
-      };
-    }
-  }, [isInactive]);
-
-  // Detect iframe focus and blur events
-  useEffect(() => {
-    const iframe = iframeRef.current;
-
-    const handleIframeFocus = () => resetTimer();
-    const handleIframeBlur = () => setIsInactive(true);
-
-    if (iframe) {
-      iframe.contentWindow.addEventListener('focus', handleIframeFocus);
-      iframe.contentWindow.addEventListener('blur', handleIframeBlur);
-    }
-
+    // Clean up the timer and event listeners on component unmount
     return () => {
-      if (iframe) {
-        iframe.contentWindow.removeEventListener('focus', handleIframeFocus);
-        iframe.contentWindow.removeEventListener('blur', handleIframeBlur);
-      }
+      clearTimeout(timer);
+      window.removeEventListener('mousemove', handleUserActivity);
+      window.removeEventListener('keydown', handleUserActivity);
+      window.removeEventListener('scroll', handleUserActivity);
     };
   }, []);
 
@@ -72,7 +47,6 @@ function FormScreen() {
   return (
     <div className="form-screen-container">
       <iframe
-        ref={iframeRef}
         src="https://docs.google.com/forms/d/e/1FAIpQLSeX3uhm60oVaH8ZfYwfX1iSEyWZYMoUv-Oh3VLlCE7H-haBCA/viewform"
         className="form-iframe"
         title="Registration Form"
