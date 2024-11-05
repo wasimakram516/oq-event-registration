@@ -6,6 +6,7 @@ function FormScreen() {
   const navigate = useNavigate();
   const [isInactive, setIsInactive] = useState(false);
   const timerRef = useRef(null);
+  const iframeRef = useRef(null);
 
   // Function to reset the inactivity timer and hide the popup
   const resetInactivityTimer = () => {
@@ -21,21 +22,22 @@ function FormScreen() {
     }, 30000); // 30000 ms = 30 seconds
   };
 
-  // Setup event listeners for touch events to reset timer
+  // Setup event listeners to reset the timer on iframe focus
   useEffect(() => {
     startInactivityTimer(); // Start the timer on mount
 
-    const handleTouchActivity = () => resetInactivityTimer();
+    const handleIframeFocus = () => resetInactivityTimer();
 
-    // Add touch event listeners for user activity
-    window.addEventListener('touchstart', handleTouchActivity);
-    window.addEventListener('touchmove', handleTouchActivity);
+    // Add focus event listener to the iframe
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener('focus', handleIframeFocus);
+    }
 
     // Cleanup timer and event listeners on component unmount
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      window.removeEventListener('touchstart', handleTouchActivity);
-      window.removeEventListener('touchmove', handleTouchActivity);
+      if (iframe) iframe.removeEventListener('focus', handleIframeFocus);
     };
   }, []);
 
@@ -47,6 +49,7 @@ function FormScreen() {
   return (
     <div className="form-screen-container">
       <iframe
+        ref={iframeRef}
         src="https://docs.google.com/forms/d/e/1FAIpQLSeX3uhm60oVaH8ZfYwfX1iSEyWZYMoUv-Oh3VLlCE7H-haBCA/viewform"
         className="form-iframe"
         title="Registration Form"
