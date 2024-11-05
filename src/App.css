@@ -11,9 +11,14 @@
 
 .register-button {
   padding: 15px 30px;
-  font-size: 1.5rem;
+  position: absolute;
+  top:40%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 2rem;
   cursor: pointer;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #F5882F;
+  color:#fff;
   border: none;
   border-radius: 8px;
 }
@@ -42,24 +47,61 @@
 /* Iframe styling */
 .form-iframe {
   width: 100%;
-  height: 90vh;
+  height: 95vh;
   border: 2px solid #ddd;
   border-radius: 8px;
   margin-bottom: 20px;
 }
 
+/* Dialog styling */
+.inactivity-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
 /* Button styling */
-.return-button {
-  padding: 12px 24px;
+.dialog-button {
+  padding: 10px 20px;
+  margin: 10px;
   font-size: 1rem;
-  color: #fff;
-  background-color: #007bff;
-  border: none;
-  border-radius: 8px;
   cursor: pointer;
+  border: none;
+  border-radius: 5px;
   transition: background-color 0.3s;
 }
 
-.return-button:hover {
+.continue-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.continue-button:hover {
   background-color: #0056b3;
+}
+
+.finish-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.finish-button:hover {
+  background-color: #c82333;
 }
