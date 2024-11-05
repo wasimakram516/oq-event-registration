@@ -1,45 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 
 function FormScreen() {
   const navigate = useNavigate();
   const [isInactive, setIsInactive] = useState(false);
-  let timer;
+  const timerRef = useRef(null);
 
-  const resetTimer = () => {
-    // Clear any existing timer
-    clearTimeout(timer);
+  // Function to reset the inactivity timer and hide the popup
+  const resetInactivityTimer = () => {
+    if (timerRef.current) clearTimeout(timerRef.current); // Clear any existing timer
+    setIsInactive(false); // Hide inactivity popup
+    startInactivityTimer(); // Restart the timer
+  };
 
-    // Set inactivity state to false, removing popup if shown
-    setIsInactive(false);
-
-    // Restart the timer
-    timer = setTimeout(() => {
+  // Function to start the inactivity timer
+  const startInactivityTimer = () => {
+    timerRef.current = setTimeout(() => {
       setIsInactive(true); // Show inactivity popup after 30 seconds
     }, 30000); // 30000 ms = 30 seconds
   };
 
+  // Setup event listeners for touch events to reset timer
   useEffect(() => {
-    // Start the inactivity timer when component mounts
-    resetTimer();
+    startInactivityTimer(); // Start the timer on mount
 
-    // Listen to user interactions on the main window
-    const handleUserActivity = () => resetTimer();
+    const handleTouchActivity = () => resetInactivityTimer();
 
-    window.addEventListener('mousemove', handleUserActivity);
-    window.addEventListener('keydown', handleUserActivity);
-    window.addEventListener('scroll', handleUserActivity);
+    // Add touch event listeners for user activity
+    window.addEventListener('touchstart', handleTouchActivity);
+    window.addEventListener('touchmove', handleTouchActivity);
 
-    // Clean up the timer and event listeners on component unmount
+    // Cleanup timer and event listeners on component unmount
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener('mousemove', handleUserActivity);
-      window.removeEventListener('keydown', handleUserActivity);
-      window.removeEventListener('scroll', handleUserActivity);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      window.removeEventListener('touchstart', handleTouchActivity);
+      window.removeEventListener('touchmove', handleTouchActivity);
     };
   }, []);
 
+  // Function to navigate to the Thank You screen
   const handleFinish = () => {
     navigate('/thank-you'); // Navigate to Thank You screen
   };
@@ -51,13 +51,13 @@ function FormScreen() {
         className="form-iframe"
         title="Registration Form"
       ></iframe>
-      
-      {/* Popup for inactivity */}
+
+      {/* Inactivity Popup */}
       {isInactive && (
         <div className="inactivity-dialog">
           <div className="dialog-content">
             <p>It seems you've been inactive for a while. Would you like to continue, or have you finished?</p>
-            <button onClick={resetTimer} className="dialog-button continue-button">
+            <button onClick={resetInactivityTimer} className="dialog-button continue-button">
               Continue
             </button>
             <button onClick={handleFinish} className="dialog-button finish-button">
