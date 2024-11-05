@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 
@@ -6,6 +6,7 @@ function FormScreen() {
   const navigate = useNavigate();
   const [isInactive, setIsInactive] = useState(false);
   const [timer, setTimer] = useState(0);
+  const iframeRef = useRef(null);
 
   // Reset the inactivity timer
   const resetTimer = () => {
@@ -27,7 +28,7 @@ function FormScreen() {
     return () => clearInterval(interval); // Clear interval on component unmount
   }, [timer, isInactive]);
 
-  // Reset inactivity timer when there is user activity, but only if the popup is not shown
+  // Reset inactivity timer when there is user activity on the main window
   useEffect(() => {
     if (!isInactive) {
       const handleActivity = () => resetTimer();
@@ -44,6 +45,26 @@ function FormScreen() {
     }
   }, [isInactive]);
 
+  // Detect iframe focus and blur events
+  useEffect(() => {
+    const iframe = iframeRef.current;
+
+    const handleIframeFocus = () => resetTimer();
+    const handleIframeBlur = () => setIsInactive(true);
+
+    if (iframe) {
+      iframe.contentWindow.addEventListener('focus', handleIframeFocus);
+      iframe.contentWindow.addEventListener('blur', handleIframeBlur);
+    }
+
+    return () => {
+      if (iframe) {
+        iframe.contentWindow.removeEventListener('focus', handleIframeFocus);
+        iframe.contentWindow.removeEventListener('blur', handleIframeBlur);
+      }
+    };
+  }, []);
+
   const handleFinish = () => {
     navigate('/thank-you'); // Navigate to Thank You screen
   };
@@ -51,6 +72,7 @@ function FormScreen() {
   return (
     <div className="form-screen-container">
       <iframe
+        ref={iframeRef}
         src="https://docs.google.com/forms/d/e/1FAIpQLSeX3uhm60oVaH8ZfYwfX1iSEyWZYMoUv-Oh3VLlCE7H-haBCA/viewform"
         className="form-iframe"
         title="Registration Form"
@@ -60,7 +82,7 @@ function FormScreen() {
       {isInactive && (
         <div className="inactivity-dialog">
           <div className="dialog-content">
-          <p>It seems you've been inactive for a while. Would you like to continue, or have you finished?</p>
+            <p>It seems you've been inactive for a while. Would you like to continue, or have you finished?</p>
             <button onClick={resetTimer} className="dialog-button continue-button">
               Continue
             </button>
